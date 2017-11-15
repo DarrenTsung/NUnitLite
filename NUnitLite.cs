@@ -50,26 +50,6 @@ namespace NUnitLite {
 			if (output.GetType() != expected_.GetType()) { throw new TestFailedException(string.Format("Output is different type, expected type is {0}, output type is {1}!", expected_.GetType().Name, output.GetType().Name)); }
 			if (!output.Equals(expected_)) { throw new TestFailedException(string.Format("Output is incorrect, expected is {0}, output is {1}!", expected_, output)); }
 		}
-
 		private object expected_;
-	}
-}
-
-namespace InterviewQuestions.AppleStocks {
-	using NUnitLite;
-	using UnityEngine;
-	using UnityEditor;
-
-	[ExecuteInEditMode]
-	[InitializeOnLoad]
-	public static class AppleStocksTests {
-		static AppleStocksTests() {
-			TestRunner.RunAllTests();
-		}
-
-		[Test]
-		public static void GetMaxProfit_BasicExample_ReturnsExpected() {
-			Assert.That(AppleStocks.GetMaxProfit(new int[] { 10, 7, 5, 8, 11, 9 }), Is.EqualTo(6));
-		}
 	}
 }
