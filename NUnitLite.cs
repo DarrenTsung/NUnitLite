@@ -57,8 +57,21 @@ namespace NUnitLite {
 		public override void CheckSatisfiedBy(object output) {
 			if (output == null && expected_ != null) { throw new TestFailedException(string.Format("Output is null, expected is {0}!", expected_)); }
 			if (output == null && expected_ == null) { return; } // successful case
-			if (output.GetType() != expected_.GetType()) { throw new TestFailedException(string.Format("Output is different type, expected type is {0}, output type is {1}!", expected_.GetType().Name, output.GetType().Name)); }
-			if (!output.Equals(expected_)) { throw new TestFailedException(string.Format("Output is incorrect, expected is {0}, output is {1}!", expected_, output)); }
+			Type expectedType = expected_.GetType(), outputType = output.GetType();
+			if (outputType != expectedType) { throw new TestFailedException(string.Format("Output is different type, expected type is {0}, output type is {1}!", expectedType.Name, outputType.Name)); }
+			if (expectedType.IsArray) { IList outputList = (IList)output, expectedList = (IList)expected_;
+				if (!ListsMatch(expectedList, outputList)) { throw new TestFailedException(string.Format("Output list does match expected list, expected is [{0}], output is [{1}]!", StringifyList(expectedList), StringifyList(outputList))); }
+			} else { if (!output.Equals(expected_)) { throw new TestFailedException(string.Format("Output is incorrect, expected is {0}, output is {1}!", expected_, output)); } }
+		}
+		private static bool ListsMatch(IList a, IList b) {
+			if (a.Count != b.Count) { return false; }
+			for (int i = 0; i < a.Count; i++) { if (!a[i].Equals(b[i])) { return false; } }
+			return true;
+		}
+		private static string StringifyList(IList list) {
+			string[] elements = new string[list.Count];
+			for (int i = 0; i < list.Count; i++) { elements[i] = list[i].ToString(); }
+			return string.Join(", ", elements);
 		}
 		private object expected_;
 	}
