@@ -16,7 +16,8 @@ namespace NUnitLite {
 						testMethodInfo.Invoke(null, null);
 						Console.WriteLine(string.Format("✓ Pass - {0}", testMethodInfo.Name));
 					} catch (TargetInvocationException exception) {
-						Console.WriteLine(string.Format("✖ Fail - {0}\n    Reason: {1}", testMethodInfo.Name, exception.InnerException.Message));
+						if (exception.InnerException is TestFailedException) { Console.WriteLine(string.Format("✖ Fail - {0}\n    Reason: {1}", testMethodInfo.Name, exception.InnerException.Message)); }
+						else { Console.WriteLine(string.Format("✖ Fail - {0}\n    Reason: Threw unhandled exception - {1}: {2}", testMethodInfo.Name, exception.InnerException.GetType().Name, exception.InnerException.Message)); }
 					}
 				}
 			}
