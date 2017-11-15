@@ -9,16 +9,20 @@ namespace NUnitLite {
 	public class TestAttribute : Attribute {}
 
 	public static class TestRunner {
-		public static void RunAllTests() {
+		private static readonly Action<string> kDefaultLogCallback = (s) => Console.WriteLine(s);
+		public static void RunAllTests(Action<string> logCallback = null) {
+			logCallback = logCallback ?? kDefaultLogCallback;
 			foreach (var type in AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())) {
 				foreach (var testMethodInfo in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Static).Where(m => m.IsDefined(typeof(TestAttribute), inherit: false))) {
+					string testResult = null;
 					try {
 						testMethodInfo.Invoke(null, null);
-						Console.WriteLine(string.Format("✓ Pass - {0}", testMethodInfo.Name));
+						testResult = string.Format("✓ Pass - {0}", testMethodInfo.Name);
 					} catch (TargetInvocationException exception) {
-						if (exception.InnerException is TestFailedException) { Console.WriteLine(string.Format("✖ Fail - {0}\n    Reason: {1}", testMethodInfo.Name, exception.InnerException.Message)); }
-						else { Console.WriteLine(string.Format("✖ Fail - {0}\n    Reason: Threw unhandled exception - {1}: {2}", testMethodInfo.Name, exception.InnerException.GetType().Name, exception.InnerException.Message)); }
+						if (exception.InnerException is TestFailedException) { testResult = string.Format("✖ Fail - {0}\n    Reason: {1}", testMethodInfo.Name, exception.InnerException.Message); }
+						else { testResult = string.Format("✖ Fail - {0}\n    Reason: Threw unhandled exception - {1}: {2}", testMethodInfo.Name, exception.InnerException.GetType().Name, exception.InnerException.Message); }
 					}
+					logCallback.Invoke(testResult);
 				}
 			}
 		}
