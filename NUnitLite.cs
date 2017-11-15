@@ -32,6 +32,12 @@ namespace NUnitLite {
 		public static void That(object output, Constraint constraint) {
 			constraint.CheckSatisfiedBy(output);
 		}
+
+		public static void Throws<T>(Action methodWrapper) {
+			try { methodWrapper.Invoke(); }
+			catch (Exception e) { if (e is T) { return; } else { throw e; } }
+			throw new TestFailedException(string.Format("Failed to throw exception of type {0}!", typeof(T).Name));
+		}
 	}
 
 	public static class Is {
