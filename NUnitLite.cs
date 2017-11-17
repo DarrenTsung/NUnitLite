@@ -11,13 +11,16 @@ namespace NUnitLite {
 	public static class TestRunner {
 		private static readonly Action<string> kDefaultLogCallback = (s) => Console.WriteLine(s);
 		public static void RunAllTests(Action<string> logCallback = null) {
+			int totalTests = 0, totalPassed = 0;
 			logCallback = logCallback ?? kDefaultLogCallback;
 			foreach (var type in AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())) {
 				foreach (var testMethodInfo in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Static).Where(m => m.IsDefined(typeof(TestAttribute), inherit: false))) {
 					string testResult = null;
+					totalTests++;
 					try {
 						testMethodInfo.Invoke(null, null);
 						testResult = string.Format("✓ Pass - {0}", testMethodInfo.Name);
+						totalPassed++;
 					} catch (TargetInvocationException exception) {
 						if (exception.InnerException is TestFailedException) { testResult = string.Format("✖ Fail - {0}\n    Reason: {1}", testMethodInfo.Name, exception.InnerException.Message); }
 						else { testResult = string.Format("✖ Fail - {0}\n    Reason: Threw unhandled exception - {1}: {2}", testMethodInfo.Name, exception.InnerException.GetType().Name, exception.InnerException.Message); }
@@ -25,6 +28,9 @@ namespace NUnitLite {
 					logCallback.Invoke(testResult);
 				}
 			}
+			int totalFailed = totalTests - totalPassed;
+			logCallback.Invoke(string.Format("Total tests: {0}. Passed: {1}. Failed: {2}.", totalTests, totalPassed, totalFailed));
+			for (int i = 0; i < totalFailed; i++) { logCallback.Invoke(""); } // NOTE (darren): to fix bug in coderpad.io where console is cut off
 		}
 	}
 
